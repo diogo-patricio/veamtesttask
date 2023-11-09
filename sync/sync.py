@@ -5,30 +5,55 @@ import shutil
 import filecmp
 import logging
 import time
+import argparse
 
 def main():
-    source = Path(sys.argv[1])
-    target = Path(sys.argv[2])
-    period = int(sys.argv[3])
-    logfile = Path(sys.argv[4])
+    args = parseArguments()
 
     logging.basicConfig(
         level=logging.INFO,
         format = '%(asctime)s:%(levelname)s:%(message)s',
-        handlers=[logging.FileHandler(logfile), logging.StreamHandler(sys.stdout)],
+        handlers=[logging.FileHandler(args.logfile), logging.StreamHandler(sys.stdout)],
     )
 
-    logging.info('Starting process: source "%s", target "%s", period "%s", logfile "%s"', source, target, period, logfile)
+    logging.info('Starting process: source "%s", replica "%s", period "%s", logfile "%s"', 
+                args.source,
+                args.replica,
+                args.period,
+                args.logfile)
     try:
         while True:
             logging.info("Starting sync")
-            dirSync(source, target)
+            dirSync(args.source, args.replica)
             logging.info("Sync ended")
-            time.sleep(period)
+            time.sleep(args.period)
     except KeyboardInterrupt:
         logging.info('Stopping process due to keyboard interrupt')
 
     #copytree(source, target, dirs_exist_ok=True)
+
+def parseArguments():
+    parser = argparse.ArgumentParser(
+        description='Periodicaly synchronizes folders from a source folder to a replica folder'
+    )
+    parser.add_argument('source',
+                        type=Path,
+                        help='the path to the folder to be synchronized'
+                        )
+    parser.add_argument('replica',
+                        type=Path,
+                        help='the path where to replicate the source folder'
+                        )
+    parser.add_argument('period',
+                        type=int,
+                        help='the synchronization interval'
+                        )
+    parser.add_argument('logfile',
+                        type=Path,
+                        help='the path to the logfile (defaults to working directory)',
+                        default='.'
+                        )
+    return parser.parse_args()
 
 def dirSync(source : Path, target : Path):
     (newFiles, newDirs, updateFiles, updateDirs, removedFiles, removedDir) = dirCmp(source, target)
