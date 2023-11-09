@@ -4,24 +4,29 @@ from pathlib import Path
 import shutil
 import filecmp
 import logging
-#from shutil import copytree
+import time
 
 def main():
     source = Path(sys.argv[1])
     target = Path(sys.argv[2])
-    period = Path(sys.argv[3])
+    period = int(sys.argv[3])
     logfile = Path(sys.argv[4])
 
-    print("Source: ", source)
-    print("Target: ", target)
-    print("Period: ", period)
-    print("Log File: ", logfile)
+    logging.basicConfig(
+        level=logging.INFO,
+        format = '%(asctime)s:%(levelname)s:%(message)s',
+        handlers=[logging.FileHandler(logfile), logging.StreamHandler(sys.stdout)],
+    )
 
-    logging.basicConfig(filename=logfile, encoding='utf-8', level=logging.INFO)
     logging.info('Starting process: source "%s", target "%s", period "%s", logfile "%s"', source, target, period, logfile)
-    print(os.listdir(source))
-
-    dirSync(source, target)
+    try:
+        while True:
+            logging.info("Starting sync")
+            dirSync(source, target)
+            logging.info("Sync ended")
+            time.sleep(period)
+    except KeyboardInterrupt:
+        logging.info('Stopping process due to keyboard interrupt')
 
     #copytree(source, target, dirs_exist_ok=True)
 
