@@ -32,7 +32,7 @@ def main():
 
     #copytree(source, target, dirs_exist_ok=True)
 
-def parseArguments():
+def parseArguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description='Periodicaly synchronizes folders from a source folder to a replica folder'
     )
@@ -55,7 +55,7 @@ def parseArguments():
                         )
     return parser.parse_args()
 
-def dirSync(source : Path, target : Path):
+def dirSync(source : Path, target : Path) -> None:
     (newFiles, newDirs, updateFiles, updateDirs, removedFiles, removedDir) = dirCmp(source, target)
 
     for file in newFiles:
@@ -77,7 +77,7 @@ def dirSync(source : Path, target : Path):
     for dir in updateDirs:
         dirSync(source / dir, target / dir)
 
-def dirCmp(dir1 : Path, dir2 : Path):
+def dirCmp(dir1 : Path, dir2 : Path) -> tuple[set[Path], set[Path], set[Path], set[Path], set[Path], set[Path]]:
     files1 = { file.relative_to(dir1) for file in dir1.iterdir() if file.is_file() }
     files2 = { file.relative_to(dir2) for file in dir2.iterdir() if file.is_file() }
     subdirs1 = { dir.relative_to(dir1) for dir in dir1.iterdir() if dir.is_dir() }
@@ -94,11 +94,11 @@ def dirCmp(dir1 : Path, dir2 : Path):
 
     return (newFiles, newDirs, updateFiles, updateDirs, removedFiles, removedDir)
 
-def fileCmp(file1 : Path, file2 : Path):
+def fileCmp(file1 : Path, file2 : Path) -> bool:
     #TODO rewrite
     return filecmp.cmp(file1, file2)
     
-def copyFile(source : Path, target : Path):
+def copyFile(source : Path, target : Path) -> None:
     try:
         shutil.copy2(source, target, follow_symlinks = False)
         logging.info('New file created: "%s"', target)
@@ -106,7 +106,7 @@ def copyFile(source : Path, target : Path):
         e = sys.exc_info()[0]
         logging.error('Error creating file: "%s"', e)
 
-def updateFile(source : Path, target : Path):
+def updateFile(source : Path, target : Path) -> None:
     try:
         os.remove(target)
         shutil.copy2(source, target)
@@ -116,7 +116,7 @@ def updateFile(source : Path, target : Path):
         logging.error('Error updating file: "%s"', e)
 
 
-def removeFile(target : Path):
+def removeFile(target : Path) -> None:
     try:
         os.remove(target)
         logging.info('File removed: "%s"', target)
@@ -124,7 +124,7 @@ def removeFile(target : Path):
         e = sys.exc_info()[0]
         logging.error('Error removing file: "%s"', e)
 
-def removeDir(dir : Path):
+def removeDir(dir : Path) -> None:
     try:
         shutil.rmtree(dir)
         logging.info('Directory removed: "%s"', dir)
@@ -132,7 +132,7 @@ def removeDir(dir : Path):
         e = sys.exc_info()[0]
         logging.error('Error removing directory: "%s"', e)
 
-def createDir(dir : Path):
+def createDir(dir : Path) -> None:
     try:
         os.mkdir(dir)
         logging.info('Directory created: "%s"', dir )
