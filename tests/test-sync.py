@@ -6,7 +6,7 @@ class TestSync(unittest.TestCase):
 
     def setUp(self) -> None:
         self.sourcePath = Path('tests/test_files/source')
-        self.targetPath = Path('tests/test_files/target')
+        self.targetPath = Path('tests/test_files/replica')
         self.restorePath = Path('tests/test_files/restore')
     
     def tearDown(self) -> None:
