@@ -2,7 +2,7 @@ import sys
 import os
 from pathlib import Path
 import shutil
-import filecmp
+import hashlib
 import logging
 import time
 import argparse
@@ -95,8 +95,20 @@ def dirCmp(dir1 : Path, dir2 : Path) -> tuple[set[Path], set[Path], set[Path], s
     return (newFiles, newDirs, updateFiles, updateDirs, removedFiles, removedDir)
 
 def fileCmp(file1 : Path, file2 : Path) -> bool:
-    #TODO rewrite
-    return filecmp.cmp(file1, file2)
+    return digest(file1) == digest(file2) 
+    
+def digest(file : Path) -> bytes:
+    bufferSize = 65536
+    md5 = hashlib.md5()
+
+    with open(file, 'rb') as file:
+        data = file.read(bufferSize)
+        while data: 
+            md5.update(data)
+            data = file.read(bufferSize)
+    
+    return md5.digest()
+            
     
 def copyFile(source : Path, target : Path) -> None:
     try:
