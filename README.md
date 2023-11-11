@@ -10,6 +10,7 @@ The task discription can be found [here](Internal%20Development%20in%20QA%20(SDE
 - [ ] Properly handle symlinks. Currently they are ignored.
 - [ ] Change timing mechanism. Currently the interval only starts after the copy process ends and not at a precise interval.
 - [ ] Extend tests:
+  - [ ] Check possible directory cycles, such as syncing to a subdirectory.
   - [ ] Check metadata
   - [ ] Check permissions
 - [ ] Improve testing tooling. Perhaps look into using some testing framework like [Pytest](https://docs.pytest.org/en/)

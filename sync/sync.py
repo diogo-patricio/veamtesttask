@@ -10,17 +10,17 @@ import argparse
 def main():
     args = parseArguments()
 
-    logging.basicConfig(
-        level=logging.INFO,
+    logging.basicConfig(level=logging.INFO,
         format = '%(asctime)s:%(levelname)s:%(message)s',
         handlers=[logging.FileHandler(args.logfile), logging.StreamHandler(sys.stdout)],
     )
 
     logging.info('Starting process: source "%s", replica "%s", period "%s", logfile "%s"', 
-                args.source,
-                args.replica,
-                args.period,
-                args.logfile)
+        args.source,
+        args.replica,
+        args.period,
+        args.logfile
+    )
     try:
         while True:
             logging.info("Starting sync")
@@ -30,29 +30,28 @@ def main():
     except KeyboardInterrupt:
         logging.info('Stopping process due to keyboard interrupt')
 
-    #copytree(source, target, dirs_exist_ok=True)
-
 def parseArguments() -> argparse.Namespace:
+    """Parse arguments received from commandline"""
     parser = argparse.ArgumentParser(
-        description='Periodicaly synchronizes folders from a source folder to a replica folder'
+        description='Periodicaly synchronizes folders from a source to a replica'
     )
     parser.add_argument('source',
-                        type=Path,
-                        help='the path to the folder to be synchronized'
-                        )
+        type=Path,
+        help='the path to the folder to be synchronized'
+    )
     parser.add_argument('replica',
-                        type=Path,
-                        help='the path where to replicate the source folder'
-                        )
+        type=Path,
+        help='the path where to replicate the source folder'
+    )
     parser.add_argument('period',
-                        type=int,
-                        help='the synchronization interval'
-                        )
+        type=int,
+        help='the synchronization interval in seconds'
+    )
     parser.add_argument('logfile',
-                        type=Path,
-                        help='the path to the logfile (defaults to working directory)',
-                        default='.'
-                        )
+        type=Path,
+        help='the path to the logfile (defaults to working directory)',
+        default='.'
+    )
     return parser.parse_args()
 
 def dirSync(source : Path, target : Path) -> None:
@@ -78,6 +77,7 @@ def dirSync(source : Path, target : Path) -> None:
         dirSync(source / dir, target / dir)
 
 def dirCmp(dir1 : Path, dir2 : Path) -> tuple[set[Path], set[Path], set[Path], set[Path], set[Path], set[Path]]:
+    """Compare directories based on their contents"""
     files1 = { file.relative_to(dir1) for file in dir1.iterdir() if file.is_file() }
     files2 = { file.relative_to(dir2) for file in dir2.iterdir() if file.is_file() }
     subdirs1 = { dir.relative_to(dir1) for dir in dir1.iterdir() if dir.is_dir() }
@@ -95,9 +95,11 @@ def dirCmp(dir1 : Path, dir2 : Path) -> tuple[set[Path], set[Path], set[Path], s
     return (newFiles, newDirs, updateFiles, updateDirs, removedFiles, removedDir)
 
 def fileCmp(file1 : Path, file2 : Path) -> bool:
+    """Compare file contents"""
     return digest(file1) == digest(file2) 
     
 def digest(file : Path) -> bytes:
+    """Generate an md5 digest of a file"""
     bufferSize = 65536
     md5 = hashlib.md5()
 
@@ -111,6 +113,7 @@ def digest(file : Path) -> bytes:
             
     
 def copyFile(source : Path, target : Path) -> None:
+    """Copy file 'source' to a 'target' directory"""
     try:
         shutil.copy2(source, target, follow_symlinks = False)
         logging.info('New file created: "%s"', target)
@@ -119,6 +122,7 @@ def copyFile(source : Path, target : Path) -> None:
         logging.error('Error creating file: "%s"', e)
 
 def updateFile(source : Path, target : Path) -> None:
+    """Updates a file 'target' to be the same as a file 'souce'"""
     try:
         os.remove(target)
         shutil.copy2(source, target)
@@ -129,6 +133,7 @@ def updateFile(source : Path, target : Path) -> None:
 
 
 def removeFile(target : Path) -> None:
+    """Removes a file"""
     try:
         os.remove(target)
         logging.info('File removed: "%s"', target)
@@ -137,6 +142,7 @@ def removeFile(target : Path) -> None:
         logging.error('Error removing file: "%s"', e)
 
 def removeDir(dir : Path) -> None:
+    """Removes a directory. Recursively removes included files and subdirectories"""
     try:
         shutil.rmtree(dir)
         logging.info('Directory removed: "%s"', dir)
@@ -145,6 +151,7 @@ def removeDir(dir : Path) -> None:
         logging.error('Error removing directory: "%s"', e)
 
 def createDir(dir : Path) -> None:
+    """Creates directory"""
     try:
         os.mkdir(dir)
         logging.info('Directory created: "%s"', dir )
