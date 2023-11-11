@@ -2,6 +2,8 @@
 
 This project is an implementation of program for a tesk task for a Veeam Software recruitment process.
 
+The task discription can be found [here](Internal%20Development%20in%20QA%20(SDET)%20Team_tesk%20task.pdf).
+
 ## Tasks and improvements
 - [ ] Properly handle symlinks. Currently they are ignored.
 - [ ] Change timing mechanism. Currently the interval only starts after the copy process ends and not at a precise interval.
